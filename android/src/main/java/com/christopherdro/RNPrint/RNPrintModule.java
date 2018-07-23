@@ -27,7 +27,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-
+import android.print.PrinterInfo;
+import android.printservice.PrinterDiscoverySession;
+import java.util.ArrayList;
+import java.util.List;
+import android.util.Log;
+import android.print.PrinterId;
+import android.text.TextUtils;
 
 /**
  * NativeModule that allows JS to open emails sending apps chooser.
@@ -182,6 +188,25 @@ public class RNPrintModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void get_configured_printers(final Promise promise) {
+        try {
+            UiThreadUtil.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    PrinterDiscoverySession printer_discovery_session = new MyPrinterDiscoverySession();
+                    List<PrinterInfo> printers_info = printer_discovery_session.getPrinters();
+                    ArrayList<String> printers = new ArrayList<String>();
+                    for (PrinterInfo printer : printers_info){
+                        printers.add(printer.getName()); 
+                    }
+                    promise.resolve(printers.size());
+                }
+            });
+        } catch (Exception e) {
+            promise.reject(getName(), e);
+        }
+    }
 
     private void loadAndClose(ParcelFileDescriptor destination, PrintDocumentAdapter.WriteResultCallback callback, InputStream input) throws IOException {
         OutputStream output = null;
